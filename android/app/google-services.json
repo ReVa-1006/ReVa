@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205957854209",
+    "project_id": "reva1006-1006",
+    "storage_bucket": "reva1006-1006.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205957854209:android:25a93e30696a4849e13c00",
+        "android_client_info": {
+          "package_name": "com.example.test_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDozb5UKlRjgFzMZPpqdiUMXyfMNQOfeFY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
