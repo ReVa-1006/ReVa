@@ -524,7 +524,15 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
+          onTap: (i) {
+            if (i == 1) {
+              Navigator.pushNamed(context, '/map');
+            } else if (i == 3) {
+              Navigator.pushNamed(context, '/profile');
+            } else {
+              setState(() => _currentIndex = i);
+            }
+          },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
           selectedItemColor: _green,
