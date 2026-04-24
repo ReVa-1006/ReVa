@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'orders_screen.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
-  const DriverDashboardScreen({super.key});
+  // ── Inject real driver info here when DB is ready ──────────────────────
+  final String driverName;
+  final String driverRole;
+
+  const DriverDashboardScreen({
+    super.key,
+    this.driverName = 'Driver',
+    this.driverRole = 'Driver Dashboard',
+  });
 
   @override
   State<DriverDashboardScreen> createState() => _DriverDashboardScreenState();
@@ -20,34 +29,8 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnim;
 
-  final List<Map<String, dynamic>> _pendingOrders = [
-    {
-      'id': '#ORD-0041',
-      'seller': 'Omar F.',
-      'sellerAddr': '12 Elm St, Cairo',
-      'buyer': 'Sara M.',
-      'buyerAddr': '45 Nile Ave, Giza',
-      'material': 'Clear PET Bottles',
-      'weight': '5 kg',
-      'price': '\$17.50',
-      'distance': '3.2 km',
-      'accepted': false,
-      'cancelled': false,
-    },
-    {
-      'id': '#ORD-0042',
-      'seller': 'Nour S.',
-      'sellerAddr': '88 Cedar Rd, Cairo',
-      'buyer': 'Ahmed K.',
-      'buyerAddr': '22 Green Blvd, Cairo',
-      'material': 'Aluminum Cans',
-      'weight': '8 kg',
-      'price': '\$24.00',
-      'distance': '5.7 km',
-      'accepted': false,
-      'cancelled': false,
-    },
-  ];
+  // ── Orders list — empty until DB is connected ─────────────────────────────
+  final List<DriverOrder> _orders = [];
 
   @override
   void initState() {
@@ -87,7 +70,9 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
                       const SizedBox(height: 20),
                       _buildSectionTitle('Incoming Orders'),
                       const SizedBox(height: 12),
-                      ..._pendingOrders.asMap().entries.map((e) => _buildOrderCard(e.key, e.value)),
+                      ..._orders
+                          .where((o) => o.status == OrderStatus.incoming)
+                          .map((o) => _buildOrderCard(o)),
                       const SizedBox(height: 20),
                       _buildSectionTitle('Completed Today'),
                       const SizedBox(height: 12),
@@ -132,8 +117,15 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Youssef M.', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                Text('Driver Dashboard', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
+                Text(widget.driverName,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800)),
+                Text(widget.driverRole,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 13)),
               ],
             ),
           ),
@@ -180,10 +172,12 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
   }
 
   Widget _buildStatsRow() {
+    final incoming = _orders.where((o) => o.status == OrderStatus.incoming).length;
+    final completed = _orders.where((o) => o.status == OrderStatus.completed).length;
     final stats = [
-      {'label': 'Today\'s Trips', 'value': '4', 'icon': Icons.route_rounded, 'color': _lightGreen},
-      {'label': 'Earnings', 'value': '\$48', 'icon': Icons.attach_money_rounded, 'color': const Color(0xFF1E88E5)},
-      {'label': 'Rating', 'value': '4.9', 'icon': Icons.star_rounded, 'color': const Color(0xFFF9A825)},
+      {'label': "Today's Trips", 'value': '$completed', 'icon': Icons.route_rounded, 'color': _lightGreen},
+      {'label': 'Incoming', 'value': '$incoming', 'icon': Icons.inbox_rounded, 'color': const Color(0xFF1E88E5)},
+      {'label': 'Rating', 'value': '—', 'icon': Icons.star_rounded, 'color': const Color(0xFFF9A825)},
     ];
     return Row(
       children: stats.map((s) {
@@ -322,9 +316,9 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
     return Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A)));
   }
 
-  Widget _buildOrderCard(int index, Map<String, dynamic> order) {
-    final isAccepted = order['accepted'] as bool;
-    final isCancelled = order['cancelled'] as bool;
+  Widget _buildOrderCard(DriverOrder order) {
+    final isIncoming = order.status == OrderStatus.incoming;
+    final isActive = order.status == OrderStatus.active;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -338,31 +332,24 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Order header
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(order['id'] as String,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _green)),
+                  decoration: BoxDecoration(color: _green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text(order.id, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _green)),
                 ),
                 const Spacer(),
                 Icon(Icons.route_rounded, size: 14, color: Colors.grey.shade500),
                 const SizedBox(width: 4),
-                Text(order['distance'] as String, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
+                Text(order.distance, style: const TextStyle(fontSize: 12, color: Color(0xFF888888))),
               ],
             ),
             const SizedBox(height: 12),
-            // Route info
-            _buildRouteRow(Icons.store_rounded, const Color(0xFFF9A825), 'Pickup (Seller)', order['seller'] as String, order['sellerAddr'] as String),
+            _buildRouteRow(Icons.store_rounded, const Color(0xFFF9A825), 'Pickup (Seller)', order.seller, order.sellerAddr),
             _buildRouteDivider(),
-            _buildRouteRow(Icons.person_pin_circle_rounded, const Color(0xFF1E88E5), 'Delivery (Buyer)', order['buyer'] as String, order['buyerAddr'] as String),
+            _buildRouteRow(Icons.person_pin_circle_rounded, const Color(0xFF1E88E5), 'Delivery (Buyer)', order.buyer, order.buyerAddr),
             const SizedBox(height: 10),
-            // Material info
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(12)),
@@ -370,53 +357,34 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
                 children: [
                   const Icon(Icons.inventory_2_rounded, color: _green, size: 18),
                   const SizedBox(width: 8),
-                  Text('${order['material']} · ${order['weight']}',
+                  Text('${order.material} · ${order.weight}',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF333333))),
                   const Spacer(),
-                  Text(order['price'] as String,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _darkGreen)),
+                  Text(order.price, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _darkGreen)),
                 ],
               ),
             ),
             const SizedBox(height: 12),
-            if (isCancelled)
-              Center(child: Text('Order Cancelled', style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.w600)))
-            else if (!isAccepted)
-              Row(
-                children: [
-                  Expanded(child: _orderActionBtn('Accept', _lightGreen, true, () {
-                    setState(() => _pendingOrders[index]['accepted'] = true);
-                  })),
-                  const SizedBox(width: 10),
-                  Expanded(child: _orderActionBtn('Reject', const Color(0xFFE53935), false, () {
-                    setState(() => _pendingOrders.removeAt(index));
-                  })),
-                ],
-              )
-            else
-              Row(
-                children: [
-                  Expanded(child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(color: _lightGreen.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.check_circle_rounded, color: _lightGreen, size: 16),
-                        SizedBox(width: 6),
-                        Text('In Progress', style: TextStyle(color: _lightGreen, fontWeight: FontWeight.w700, fontSize: 13)),
-                      ],
-                    ),
-                  )),
-                  const SizedBox(width: 10),
-                  Expanded(child: _orderActionBtn('Cancel', const Color(0xFFE53935), false, () {
-                    setState(() {
-                      _pendingOrders[index]['accepted'] = false;
-                      _pendingOrders[index]['cancelled'] = true;
-                    });
-                  })),
-                ],
-              ),
+            if (isIncoming)
+              Row(children: [
+                Expanded(child: _orderActionBtn('Accept', _lightGreen, true, () {
+                  setState(() => order.status = OrderStatus.active);
+                })),
+                const SizedBox(width: 10),
+                Expanded(child: _orderActionBtn('Reject', const Color(0xFFE53935), false, () {
+                  setState(() => order.status = OrderStatus.cancelled);
+                })),
+              ])
+            else if (isActive)
+              Row(children: [
+                Expanded(child: _orderActionBtn('Complete ✓', _lightGreen, true, () {
+                  setState(() => order.status = OrderStatus.completed);
+                })),
+                const SizedBox(width: 10),
+                Expanded(child: _orderActionBtn('Cancel', const Color(0xFFE53935), false, () {
+                  setState(() => order.status = OrderStatus.cancelled);
+                })),
+              ]),
           ],
         ),
       ),
@@ -466,10 +434,15 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
   }
 
   Widget _buildCompletedList() {
-    final completed = [
-      {'id': '#ORD-0038', 'buyer': 'Lina R.', 'amount': '\$22.00'},
-      {'id': '#ORD-0036', 'buyer': 'Khaled A.', 'amount': '\$15.50'},
-    ];
+    final completed = _orders
+        .where((o) => o.status == OrderStatus.completed)
+        .toList();
+    if (completed.isEmpty) {
+      return const Center(
+        child: Text('No completed trips today.',
+            style: TextStyle(color: Color(0xFF999999))),
+      );
+    }
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -490,11 +463,11 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
                     Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(o['id']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A))),
-                        Text('Buyer: ${o['buyer']}', style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
+                        Text(o.id, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A))),
+                        Text('Buyer: ${o.buyer}', style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
                       ],
                     )),
-                    Text(o['amount']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _darkGreen)),
+                    Text(o.price, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _darkGreen)),
                   ],
                 ),
               ),
@@ -527,6 +500,10 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
           onTap: (i) {
             if (i == 1) {
               Navigator.pushNamed(context, '/map');
+            } else if (i == 2) {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => OrdersScreen(orders: _orders),
+              ));
             } else if (i == 3) {
               Navigator.pushNamed(context, '/profile');
             } else {
