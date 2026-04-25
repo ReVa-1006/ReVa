@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/signup_model.dart';
 import 'role_selection_screen.dart';
-import 'otp_screen.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 
@@ -72,6 +71,14 @@ class _SignupScreenState extends State<SignupScreen> {
   // ─── Submit ─────────────────────────────────────────────────────────────────
   void _continue() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (!_isEmail) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Firebase signup needs email for now.')),
+      );
+      return;
+    }
+
     if (_usernameAvailable != true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -84,33 +91,46 @@ class _SignupScreenState extends State<SignupScreen> {
 
     setState(() => _isLoading = true);
 
-    final model = SignupModel(
-      fullName: _nameController.text.trim(),
-      username: _usernameController.text.trim().toLowerCase(),
-      email: _isEmail ? _identifierController.text.trim() : null,
-      phoneNumber: !_isEmail ? _identifierController.text.trim() : null,
-      password: _passwordController.text,
-    );
+    try {
+      final result = await AuthService().signUp(
+        _identifierController.text,
+        _passwordController.text,
+      );
 
-    // Simulate a brief async action then navigate to OTP
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      await FirestoreService().createUser(
+        uid: result.user!.uid,
+        name: _nameController.text.trim(),
+        email: _identifierController.text.trim(),
+        role: 'buyer',
+      );
 
-    final verified = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OtpVerificationScreen(
-          contactInfo: _identifierController.text.trim(),
-          isEmail: _isEmail,
-        ),
-      ),
-    );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
-    if (verified == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created successfully')),
+      );
+
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => RoleSelectionScreen(signup: model)),
+        MaterialPageRoute(
+          builder: (_) => RoleSelectionScreen(
+            signup: SignupModel(
+              fullName: _nameController.text.trim(),
+              username: _usernameController.text.trim().toLowerCase(),
+              email: _identifierController.text.trim(),
+              phoneNumber: null,
+              password: _passwordController.text,
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
       );
     }
   }
