@@ -1,6 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class FirestoreService {
-  final db = FirebaseFirestore.instance;
+  final FirebaseFirestore db = FirebaseFirestore.instance;
+
+  Future<void> createUser({
+    required String uid,
+    required String name,
+    required String email,
+    required String role,
+  }) async {
+    await db.collection('users').doc(uid).set({
+      'uid': uid,
+      'name': name,
+      'email': email,
+      'role': role,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<String?> getUserRole(String uid) async {
+    final doc = await db.collection('users').doc(uid).get();
+
+    if (!doc.exists) return null;
+
+    return doc.data()?['role'];
+  }
 }
