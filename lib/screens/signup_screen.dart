@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/signup_model.dart';
 import 'role_selection_screen.dart';
 import 'otp_screen.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
