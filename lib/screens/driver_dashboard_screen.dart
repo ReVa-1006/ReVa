@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'orders_screen.dart';
+import 'logout_screen.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   // ── Inject real driver info here when DB is ready ──────────────────────
@@ -163,6 +164,27 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen>
                         )),
                   ],
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LogoutScreen()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Colors.white,
+                size: 20,
               ),
             ),
           ),

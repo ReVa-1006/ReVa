@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'logout_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userName;
@@ -564,43 +565,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildLogoutButton() {
     return GestureDetector(
-      onTap: () => showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'Log Out',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          content: const Text('Are you sure you want to log out?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Color(0xFF888888)),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/', (r) => false);
-              },
-              child: const Text(
-                'Log Out',
-                style: TextStyle(
-                  color: Color(0xFFE53935),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LogoutScreen()),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),

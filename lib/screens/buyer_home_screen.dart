@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ai_chat_screen.dart';
+import 'logout_screen.dart';
 
 class BuyerHomeScreen extends StatefulWidget {
   final String userName;
@@ -226,6 +227,31 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 Icons.shopping_cart_outlined,
                 color: _green,
                 size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // ── Logout icon ──
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LogoutScreen()),
+                );
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: _green,
+                  size: 22,
+                ),
               ),
             ),
           ],

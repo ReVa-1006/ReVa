@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'logout_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -214,10 +215,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ],
               ),
-              Icon(
-                Icons.water_drop_rounded,
-                color: Colors.white.withValues(alpha: 0.25),
-                size: 16,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LogoutScreen()),
+                  );
+                },
+                child: Icon(
+                  Icons.logout_rounded,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  size: 20,
+                ),
               ),
             ],
           ),
